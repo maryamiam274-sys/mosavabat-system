@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سامانه مدیریت مصوبات</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #333; }
+
+    /* ===== LOGIN ===== */
+    #loginPage {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: linear-gradient(135deg, #1a3c5e 0%, #2d6a9f 100%);
+    }
+    .login-box {
+      background: #fff; border-radius: 16px; padding: 40px 36px;
+      width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      text-align: center;
+    }
+    .login-box h2 { color: #1a3c5e; margin-bottom: 8px; font-size: 1.4rem; }
+    .login-box p { color: #888; margin-bottom: 28px; font-size: 0.85rem; }
+    .login-box input {
+      width: 100%; padding: 11px 14px; margin-bottom: 14px;
+      border: 1.5px solid #d0d7e2; border-radius: 8px;
+      font-size: 1rem; font-family: inherit; direction: ltr;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { outline: none; border-color: #2d6a9f; }
+    .login-box button {
+      width: 100%; padding: 12px; background: #1a3c5e;
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 1rem; cursor: pointer; font-family: inherit;
+      transition: background 0.2s;
+    }
+    .login-box button:hover { background: #2d6a9f; }
+    .login-error { color: #e53935; margin-top: 10px; font-size: 0.9rem; }
+
+    /* ===== MAIN LAYOUT ===== */
+    #mainApp { display: none; flex-direction: column; min-height: 100vh; }
+    .topbar {
+      background: #1a3c5e; color: #fff; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 58px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .topbar-title { font-size: 1.1rem; font-weight: bold; }
+    .topbar-user { display: flex; align-items: center; gap: 14px; font-size: 0.92rem; }
+    .user-info-badge {
+      background: rgba(255,255,255,0.15); border-radius: 20px;
+      padding: 5px 14px; display: flex; flex-direction: column;
+      align-items: flex-end; line-height: 1.4;
+    }
+    .user-info-badge .uname { font-weight: bold; font-size: 0.95rem; }
+    .user-info-badge .urole { font-size: 0.78rem; opacity: 0.85; }
+    .btn-logout {
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; padding: 6px 16px; border-radius: 6px;
+      cursor: pointer; font-family: inherit; font-size: 0.88rem;
+      transition: background 0.2s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.3); }
+
+    .main-body { display: flex; flex: 1; }
+    .sidebar {
+      width: 220px; background: #fff;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.07);
+      padding: 18px 0;
+    }
+    .sidebar a {
+      display: block; padding: 12px 22px; color: #444;
+      text-decoration: none; font-size: 0.95rem;
+      border-right: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: #eef3fa; color: #1a3c5e;
+      border-right-color: #1a3c5e;
+    }
+    .sidebar .admin-only { display: none; }
+    .content { flex: 1; padding: 24px; overflow-y: auto; }
+
+    /* ===== CARDS / SECTIONS ===== */
+    .section { display: none; }
+    .section.active { display: block; }
+    .card {
+      background: #fff; border-radius: 12px;
+      padding: 24px; margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .card h3 { color: #1a3c5e; margin-bottom: 18px; font-size: 1.05rem; }
+    .form-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      margin-bottom: 14px;
+    }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.88rem; color: #555; font-weight: 500; }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 9px 12px; border: 1.5px solid #d0d7e2;
+      border-radius: 8px; font-size: 0.93rem; font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: #2d6a9f;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .btn-primary {
+      background: #1a3c5e; color: #fff; border: none;
+      padding: 10px 28px; border-radius: 8px;
+      cursor: pointer; font-family: inherit; font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #2d6a9f; }
+    .btn-sm {
+      padding: 5px 12px; border-radius: 6px; font-size: 0.82rem;
+      cursor: pointer; font-family: inherit; border: none;
+    }
+    .btn-view { background: #e3f0fb; color: #1a3c5e; }
+    .btn-edit { background: #fff8e1; color: #f57f17; }
+    .btn-delete { background: #fdecea; color: #c62828; }
+
+    /* ===== TABLE ===== */
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { background: #1a3c5e; color: #fff; padding: 10px 12px; text-align: right; }
+    td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    tr:hover td { background: #f7faff; }
+    .badge {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 12px; font-size: 0.8rem; font-weight: 500;
+    }
+    .badge-pending  { background: #fff8e1; color: #f57f17; }
+    .badge-progress { background: #e3f0fb; color: #1565c0; }
+    .badge-done     { background: #e8f5e9; color: #2e7d32; }
+    .badge-overdue  { background: #fdecea; color: #c62828; }
+
+    /* ===== DASHBOARD STATS ===== */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #fff; border-radius: 12px; padding: 20px;
+      text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .stat-card .num { font-size: 2rem; font-weight: bold; color: #1a3c5e; }
+    .stat-card .lbl { font-size: 0.82rem; color: #888; margin-top: 4px; }
+    .stat-overdue .num  { color: #c62828; }
+    .stat-progress .num { color: #1565c0; }
+    .stat-done .num     { color: #2e7d32; }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 14px;
+      padding: 28px; width: 92%; max-width: 600px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .modal-box h3 { color: #1a3c5e; margin-bottom: 20px; }
+    .modal-close {
+      float: left; background: #eee; border: none;
+      border-radius: 6px; padding: 4px 12px;
+      cursor: pointer; font-size: 1rem;
+    }
+    .detail-row {
+      display: flex; gap: 8px; margin-bottom: 10px;
+      font-size: 0.92rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;
+    }
+    .detail-row .dlbl { color: #888; min-width: 140px; }
+    .detail-row .dval { color: #222; flex: 1; }
+
+    @media(max-width:700px){
+      .sidebar { display: none; }
+      .form-row { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== LOGIN PAGE ========== -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>🏭 سامانه مدیریت مصوبات</h2>
+    <p>لطفاً شماره پرسنلی خود را وارد کنید</p>
+    <input type="text"     id="loginUser" placeholder="شماره پرسنلی" />
+    <input type="password" id="loginPass" placeholder="رمز عبور" />
+    <button onclick="doLogin()">ورود</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="mainApp">
+  <div class="topbar">
+    <div class="topbar-title">📋 سامانه مدیریت مصوبات</div>
+    <div class="topbar-user">
+      <div class="user-info-badge">
+        <span class="uname" id="topUserName"></span>
+        <span class="urole" id="topUserRole"></span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">خروج</button>
+    </div>
+  </div>
+  <div class="main-body">
+    <div class="sidebar" id="sidebar">
+      <a href="#" onclick="showSection('dashboard')" class="active">📊 داشبورد</a>
+      <a href="#" onclick="showSection('meetings')">📅 جلسات</a>
+      <a href="#" onclick="showSection('resolutions')">📝 مصوبات</a>
+      <a href="#" onclick="showSection('newMeeting')"    class="admin-only" id="sideNewMeeting">➕ ثبت جلسه</a>
+      <a href="#" onclick="showSection('newResolution')" class="admin-only" id="sideNewResolution">✏️ ثبت مصوبه</a>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="section active" id="sec-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="num" id="statTotal">0</div>
+            <div class="lbl">کل مصوبات</div>
+          </div>
+          <div class="stat-card stat-overdue">
+            <div class="num" id="statOverdue">0</div>
+            <div class="lbl">گذشته‌الموعد</div>
+          </div>
+          <div class="stat-card stat-progress">
+            <div class="num" id="statProgress">0</div>
+            <div class="lbl">در دست بررسی</div>
+          </div>
+          <div class="stat-card stat-done">
+            <div class="num" id="statDone">0</div>
+            <div class="lbl">انجام شده</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>⚠️ مصوبات گذشته‌الموعد</h3>
+          <table>
+            <thead><tr>
+              <th>کد</th><th>عنوان</th><th>متولی</th><th>مهلت</th><th>وضعیت</th>
+            </tr></thead>
+            <tbody id="tbodyOverdue"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>🔄 مصوبات در دست بررسی</h3>
+          <table>
+            <thead><tr>
+              <th>کد</th><th>عنوان</th><th>متولی همکار</th><th>مهلت</th><th>عملیات</th>
+            </tr></thead>
+            <tbody id="tbodyInProgress"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MEETINGS LIST -->
+      <div class="section" id="sec-meetings">
+        <div class="card">
+          <h3>📅 لیست جلسات</h3>
+          <table>
+            <thead><tr>
+              <th>شماره</th><th>عنوان</th><th>تاریخ</th><th>مکان</th><th>دستور جلسه</th><th>عملیات</th>
+            </tr></thead>
+            <tbody id="tbodyMeetings"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RESOLUTIONS LIST -->
+      <div class="section" id="sec-resolutions">
+        <div class="card">
+          <h3>📝 لیست مصوبات</h3>
+          <div style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">
+            <select id="filterStatus" onchange="renderResolutions()"
+              style="padding:7px 12px;border-radius:8px;border:1.5px solid #d0d7e2;font-family:inherit">
+              <option value="">همه وضعیت‌ها</option>
+              <option value="pending">در انتظار</option>
+              <option value="progress">در دست بررسی</option>
+              <option value="done">انجام شده</option>
+            </select>
+          </div>
+          <table>
+            <thead><tr>
+              <th>کد</th><th>عنوان</th><th>متولی</th><th>متولی همکار</th><th>مهلت</th><th>وضعیت</th><th>عملیات</th>
+            </tr></thead>
+            <tbody id="tbodyResolutions"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- NEW MEETING -->
+      <div class="section" id="sec-newMeeting">
+        <div class="card">
+          <h3>➕ ثبت جلسه جدید</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>عنوان جلسه</label>
+              <input type="text" id="mTitle" placeholder="عنوان جلسه" />
+            </div>
+            <div class="form-group">
+              <label>تاریخ جلسه (شمسی)</label>
+              <input type="text" id="mDate" placeholder="مثال: ۱۴۰۵/۰۳/۱۵" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>مکان</label>
+              <input type="text" id="mPlace" placeholder="محل برگزاری" />
+            </div>
+            <div class="form-group">
+              <label>دبیر جلسه</label>
+              <input type="text" id="mSecretary" placeholder="نام دبیر جلسه" />
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>دستور جلسه</label>
+              <textarea id="mAgenda" placeholder="دستور جلسه را وارد کنید"></textarea>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveMeeting()">ذخیره جلسه</button>
+        </div>
+      </div>
+
+      <!-- NEW RESOLUTION -->
+      <div class="section" id="sec-newResolution">
+        <div class="card">
+          <h3>✏️ ثبت مصوبه جدید</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>کد مصوبه (خودکار)</label>
+              <input type="text" id="rCode" readonly style="background:#f5f5f5" />
+            </div>
+            <div class="form-group">
+              <label>جلسه مرتبط</label>
+              <select id="rMeeting"><option value="">انتخاب جلسه</option></select>
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>عنوان مصوبه</label>
+              <input type="text" id="rTitle" placeholder="عنوان مصوبه" />
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>شرح مفاد</label>
+              <textarea id="rDesc" placeholder="شرح کامل مفاد مصوبه"></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>متولی اصلی</label>
+              <select id="rOwner"><option value="">انتخاب متولی</option></select>
+            </div>
+            <div class="form-group">
+              <label>متولی همکار</label>
+              <select id="rCoOwner"><option value="">انتخاب متولی همکار</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>مهلت پاسخگویی (شمسی)</label>
+              <input type="text" id="rDeadline" placeholder="مثال: ۱۴۰۵/۰۴/۳۰" />
+            </div>
+            <div class="form-group">
+              <label>وضعیت اولیه</label>
+              <select id="rStatus">
+                <option value="pending">در انتظار</option>
+                <option value="progress">در دست بررسی</option>
+                <option value="done">انجام شده</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveResolution()">ذخیره مصوبه</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="modalTitle">جزئیات</h3>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const USERS = [
+  { id:'480075',   name:'مریم آقاجانپور',         role:'کارشناس برنامه‌ریزی استراتژیک', admin:true  },
+  { id:'4420023',  name:'فریبا خلج',               role:'کارشناس تضمین کیفیت',           admin:false },
+  { id:'4920049',  name:'دامون فضلی',              role:'مدیر سیستم‌ها و روش‌ها',         admin:false },
+  { id:'11111111', name:'محمد بنی اسدی',           role:'قائم مقام مدیر عامل',            admin:false },
+  { id:'4420085',  name:'علیرضا حاجی علیمحمدی',   role:'مدیر تحقیق و تکوین محصول',      admin:false },
+  { id:'1234567',  name:'حمید ریاضی',              role:'مشاور فنی',                      admin:false },
+  { id:'4960037',  name:'سولماز اخلاقی',           role:'مدیر والی',                      admin:false },
+  { id:'4970017',  name:'مسعود آروین',             role:'مدیر فروش',                      admin:false },
+  { id:'4930089',  name:'آریا دانش مایه',          role:'مدیر ریخته‌گری و پوششکاری',      admin:false },
+  { id:'4850146',  name:'علی طاهری نسب',           role:'مدیر ماشینکاری و ابزارسازی',    admin:false },
+  { id:'4850162',  name:'محمدرضا رحمانی',          role:'مدیر کنترل کیفیت و آزمایشگاه',  admin:false },
+  { id:'4860011',  name:'اسماعیل رحمانی',          role:'سرپرست منابع انسانی',            admin:false },
+  { id:'22222222', name:'قدرت‌اله سلیمانی',        role:'کارشناس ایمنی و بهداشت',        admin:false },
+  { id:'4960039',  name:'سعید خدادادپیگی',         role:'رئیس مهندسی صنایع',             admin:false },
+  { id:'4890001',  name:'مهدی محمودی',             role:'رئیس انبار و مدیریت ابزار',     admin:false },
+  { id:'4990190',  name:'یداله منافی',             role:'کارشناس تامین داخل',            admin:false },
+  { id:'4940052',  name:'آرش بلوری',               role:'سرپرست فناوری اطلاعات',         admin:false },
+];
+
+let currentUser = null;
+let meetings    = JSON.parse(localStorage.getItem('sp_meetings')    || '[]');
+let resolutions = JSON.parse(localStorage.getItem('sp_resolutions') || '[]');
+
+/* ---- AUTH ---- */
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  const user = USERS.find(x => x.id === u && x.id === p);
+  if (!user) {
+    document.getElementById('loginError').textContent = 'شماره پرسنلی یا رمز عبور اشتباه است';
+    return;
+  }
+  currentUser = user;
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainApp').style.display   = 'flex';
+  document.getElementById('topUserName').textContent = user.name;
+  document.getElementById('topUserRole').textContent = user.role;
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = user.admin ? 'block' : 'none';
+  });
+  initApp();
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('mainApp').style.display   = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  showSection('dashboard');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const lp = document.getElementById('loginPage');
+    if (lp.style.display !== 'none') doLogin();
+  }
+});
+
+/* ---- INIT ---- */
+function initApp() {
+  fillUserSelects();
+  fillMeetingSelect();
+  generateCode();
+  renderDashboard();
+  renderMeetings();
+  renderResolutions();
+}
+
+function fillUserSelects() {
+  ['rOwner','rCoOwner'].forEach(sid => {
+    const sel = document.getElementById(sid);
+    sel.innerHTML = '<option value="">انتخاب...</option>';
+    USERS.forEach(u => {
+      const o = document.createElement('option');
+      o.value = u.name;
+      o.textContent = u.name + ' - ' + u.role;
+      sel.appendChild(o);
+    });
+  });
+}
+
+function fillMeetingSelect() {
+  const sel = document.getElementById('rMeeting');
+  sel.innerHTML = '<option value="">انتخاب جلسه</option>';
+  meetings.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id;
+    o.textContent = m.title + ' (' + m.date + ')';
+    sel.appendChild(o);
+  });
+}
+
+function generateCode() {
+  const num = resolutions.length + 1;
+  document.getElementById('rCode').value = 'SP-' + String(num).padStart(4,'0');
+}
+
+/* ---- NAV ---- */
+function showSection(name) {
+  if ((name==='newMeeting'||name==='newResolution') && (!currentUser||!currentUser.admin)) {
+    alert('دسترسی فقط برای مدیر سامانه مجاز است'); return;
+  }
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  if (name==='newResolution') generateCode();
+  return false;
+}
+
+/* ---- SAVE MEETING ---- */
+function saveMeeting() {
+  if (!currentUser||!currentUser.admin) { alert('دسترسی ندارید'); return; }
+  const title     = document.getElementById('mTitle').value.trim();
+  const date      = document.getElementById('mDate').value.trim();
+  const place     = document.getElementById('mPlace').value.trim();
+  const secretary = document.getElementById('mSecretary').value.trim();
+  const agenda    = document.getElementById('mAgenda').value.trim();
+  if (!title||!date) { alert('عنوان و تاریخ جلسه الزامی است'); return; }
+  meetings.push({ id:Date.now().toString(), title, date, place, secretary, agenda });
+  localStorage.setItem('sp_meetings', JSON.stringify(meetings));
+  ['mTitle','mDate','mPlace','mSecretary','mAgenda'].forEach(id => document.getElementById(id).value='');
+  fillMeetingSelect(); renderMeetings(); renderDashboard();
+  alert('جلسه با موفقیت ثبت شد');
+  showSection('meetings');
+}
+
+/* ---- SAVE RESOLUTION ---- */
+function saveResolution() {
+  if (!currentUser||!currentUser.admin) { alert('دسترسی ندارید'); return; }
+  const code      = document.getElementById('rCode').value;
+  const meetingId = document.getElementById('rMeeting').value;
+  const title     = document.getElementById('rTitle').value.trim();
+  const desc      = document.getElementById('rDesc').value.trim();
+  const owner     = document.getElementById('rOwner').value;
+  const coOwner   = document.getElementById('rCoOwner').value;
+  const deadline  = document.getElementById('rDeadline').value.trim();
+  const status    = document.getElementById('rStatus').value;
+  if (!title||!owner||!deadline) { alert('عنوان، متولی و مهلت الزامی است'); return; }
+  resolutions.push({ id:Date.now().toString(), code, meetingId, title, desc, owner, coOwner, deadline, status });
+  localStorage.setItem('sp_resolutions', JSON.stringify(resolutions));
+  ['rMeeting','rOwner','rCoOwner','rStatus'].forEach(id => {
+    const el=document.getElementById(id); if(el.tagName==='SELECT') el.selectedIndex=0;
+  });
+  ['rTitle','rDesc','rDeadline'].forEach(id => document.getElementById(id).value='');
+  generateCode(); renderResolutions(); renderDashboard();
+  alert('مصوبه با کد '+code+' ثبت شد');
+  showSection('resolutions');
+}
+
+/* ---- MEETINGS ---- */
+function renderMeetings() {
+  const tbody = document.getElementById('tbodyMeetings');
+  tbody.innerHTML = '';
+  if (!meetings.length) {
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa">جلسه‌ای ثبت نشده</td></tr>'; return;
+  }
+  meetings.slice().reverse().forEach(m => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${m.id.slice(-4)}</td><td>${m.title}</td><td>${m.date}</td>
+      <td>${m.place||'-'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.agenda||'-'}</td>
+      <td>
+        <button class="btn-sm btn-view" onclick="viewMeeting('${m.id}')">مشاهده</button>
+        ${currentUser&&currentUser.admin?`<button class="btn-sm btn-delete" onclick="deleteMeeting('${m.id}')">حذف</button>`:''}
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function viewMeeting(id) {
+  const m = meetings.find(x=>x.id===id); if(!m) return;
+  document.getElementById('modalTitle').textContent = m.title;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="detail-row"><span class="dlbl">تاریخ:</span><span class="dval">${m.date}</span></div>
+    <div class="detail-row"><span class="dlbl">مکان:</span><span class="dval">${m.place||'-'}</span></div>
+    <div class="detail-row"><span class="dlbl">دبیر جلسه:</span><span class="dval">${m.secretary||'-'}</span></div>
+    <div class="detail-row"><span class="dlbl">دستور جلسه:</span><span class="dval">${m.agenda||'-'}</span></div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function deleteMeeting(id) {
+  if (!currentUser||!currentUser.admin) return;
+  if (!confirm('آیا مطمئن هستید؟')) return;
+  meetings = meetings.filter(x=>x.id!==id);
+  localStorage.setItem('sp_meetings',JSON.stringify(meetings));
+  fillMeetingSelect(); renderMeetings(); renderDashboard();
+}
+
+/* ---- HELPERS ---- */
+function isOverdue(deadline, status) {
+  if (status==='done'||!deadline) return false;
+  const latin = deadline.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+  const parts = latin.split('/');
+  if (parts.length!==3) return false;
+  const jy=parseInt(parts[0]), jm=parseInt(parts[1]), jd=parseInt(parts[2]);
+  return new Date(jy+621, jm-1, jd) < new Date();
+}
+
+function statusLabel(status, deadline) {
+  if (isOverdue(deadline,status))  return '<span class="badge badge-overdue">گذشته‌الموعد</span>';
+  if (status==='pending')  return '<span class="badge badge-pending">در انتظار</span>';
+  if (status==='progress') return '<span class="badge badge-progress">در دست بررسی</span>';
+  if (status==='done')     return '<span class="badge badge-done">انجام شده</span>';
+  return status;
+}
+
+/* ---- RESOLUTIONS ---- */
+function renderResolutions() {
+  const tbody  = document.getElementById('tbodyResolutions');
+  const filter = document.getElementById('filterStatus').value;
+  tbody.innerHTML = '';
+  let list = resolutions.slice().reverse();
+  if (filter) list = list.filter(r=>r.status===filter);
+  if (!list.length) {
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#aaa">مصوبه‌ای یافت نشد</td></tr>'; return;
+  }
+  list.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.code}</td><td>${r.title}</td><td>${r.owner}</td>
+      <td>${r.coOwner||'-'}</td><td>${r.deadline}</td>
+      <td>${statusLabel(r.status,r.deadline)}</td>
+      <td>
+        <button class="btn-sm btn-view" onclick="viewResolution('${r.id}')">مشاهده</button>
+        ${currentUser&&currentUser.admin?`
+          <button class="btn-sm btn-edit"   onclick="changeStatus('${r.id}')">تغییر وضعیت</button>
+          <button class="btn-sm btn-delete" onclick="deleteResolution('${r.id}')">حذف</button>`:''}
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function viewResolution(id) {
+  const r = resolutions.find(x=>x.id===id); if(!r) return;
+  const m = meetings.find(x=>x.id===r.meetingId);
+  document.getElementById('modalTitle').textContent = r.code + ' - ' + r.title;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="detail-row"><span class="dlbl">کد مصوبه:</span><span class="dval">${r.code}</span></div>
+    <div class="detail-row"><span class="dlbl">جلسه:</span><span class="dval">${m?m.title+' ('+m.date+')':'-'}</span></div>
+    <div class="detail-row"><span class="dlbl">عنوان:</span><span class="dval">${r.title}</span></div>
+    <div class="detail-row"><span class="dlbl">شرح مفاد:</span><span class="dval">${r.desc||'-'}</span></div>
+    <div class="detail-row"><span class="dlbl">متولی اصلی:</span><span class="dval">${r.owner}</span></div>
+    <div class="detail-row"><span class="dlbl">متولی همکار:</span><span class="dval">${r.coOwner||'-'}</span></div>
+    <div class="detail-row"><span class="dlbl">مهلت پاسخگویی:</span><span class="dval">${r.deadline}</span></div>
+    <div class="detail-row"><span class="dlbl">وضعیت:</span><span class="dval">${statusLabel(r.status,r.deadline)}</span></div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function changeStatus(id) {
+  if (!currentUser||!currentUser.admin) { alert('دسترسی ندارید'); return; }
+  const r = resolutions.find(x=>x.id===id); if(!r) return;
+  const opts = ['pending','progress','done'];
+  r.status = opts[(opts.indexOf(r.status)+1)%3];
+  localStorage.setItem('sp_resolutions',JSON.stringify(resolutions));
+  renderResolutions(); renderDashboard();
+}
+
+function deleteResolution(id) {
+  if (!currentUser||!currentUser.admin) return;
+  if (!confirm('آیا مطمئن هستید؟')) return;
+  resolutions = resolutions.filter(x=>x.id!==id);
+  localStorage.setItem('sp_resolutions',JSON.stringify(resolutions));
+  renderResolutions(); renderDashboard();
+}
+
+/* ---- DASHBOARD ---- */
+function renderDashboard() {
+  const overdueL = resolutions.filter(r=>isOverdue(r.deadline,r.status));
+  const progress = resolutions.filter(r=>r.status==='progress');
+  const done     = resolutions.filter(r=>r.status==='done');
+  document.getElementById('statTotal').textContent    = resolutions.length;
+  document.getElementById('statOverdue').textContent  = overdueL.length;
+  document.getElementById('statProgress').textContent = progress.length;
+  document.getElementById('statDone').textContent     = done.length;
+
+  const toBody = document.getElementById('tbodyOverdue');
+  toBody.innerHTML = '';
+  if (!overdueL.length) {
+    toBody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#aaa">موردی وجود ندارد</td></tr>';
+  } else {
+    overdueL.forEach(r => {
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${r.code}</td><td>${r.title}</td><td>${r.owner}</td><td>${r.deadline}</td><td>${statusLabel(r.status,r.deadline)}</td>`;
+      toBody.appendChild(tr);
+    });
+  }
+
+  const tpBody = document.getElementById('tbodyInProgress');
+  tpBody.innerHTML = '';
+  if (!progress.length) {
+    tpBody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#aaa">موردی وجود ندارد</td></tr>';
+  } else {
+    progress.forEach(r => {
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${r.code}</td><td>${r.title}</td><td>${r.coOwner||'-'}</td><td>${r.deadline}</td>
+        <td>${currentUser&&currentUser.admin
+          ?`<button class="btn-sm btn-edit" onclick="changeStatus('${r.id}')">تغییر وضعیت</button>`
+          :statusLabel(r.status,r.deadline)}</td>`;
+      tpBody.appendChild(tr);
+    });
+  }
+}
+
+/* ---- MODAL ---- */
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+document.getElementById('modalOverlay').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+</script>
+</body>
+</html>
