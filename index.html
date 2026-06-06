@@ -1,424 +1,440 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سامانه مدیریت مصوبات</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; color: #333; }
-
-    /* ===== LOGIN ===== */
-    #loginPage {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; background: linear-gradient(135deg, #1a3c5e 0%, #2d6a9f 100%);
-    }
-    .login-box {
-      background: #fff; border-radius: 16px; padding: 40px 36px;
-      width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-      text-align: center;
-    }
-    .login-box h2 { color: #1a3c5e; margin-bottom: 8px; font-size: 1.4rem; }
-    .login-box p { color: #888; margin-bottom: 28px; font-size: 0.85rem; }
-    .login-box input {
-      width: 100%; padding: 11px 14px; margin-bottom: 14px;
-      border: 1.5px solid #d0d7e2; border-radius: 8px;
-      font-size: 1rem; font-family: inherit; direction: ltr;
-      transition: border-color 0.2s;
-    }
-    .login-box input:focus { outline: none; border-color: #2d6a9f; }
-    .login-box button {
-      width: 100%; padding: 12px; background: #1a3c5e;
-      color: #fff; border: none; border-radius: 8px;
-      font-size: 1rem; cursor: pointer; font-family: inherit;
-      transition: background 0.2s;
-    }
-    .login-box button:hover { background: #2d6a9f; }
-    .login-error { color: #e53935; margin-top: 10px; font-size: 0.9rem; }
-
-    /* ===== MAIN LAYOUT ===== */
-    #mainApp { display: none; flex-direction: column; min-height: 100vh; }
-    .topbar {
-      background: #1a3c5e; color: #fff; padding: 0 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 58px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .topbar-title { font-size: 1.1rem; font-weight: bold; }
-    .topbar-user { display: flex; align-items: center; gap: 14px; font-size: 0.92rem; }
-    .user-info-badge {
-      background: rgba(255,255,255,0.15); border-radius: 20px;
-      padding: 5px 14px; display: flex; flex-direction: column;
-      align-items: flex-end; line-height: 1.4;
-    }
-    .user-info-badge .uname { font-weight: bold; font-size: 0.95rem; }
-    .user-info-badge .urole { font-size: 0.78rem; opacity: 0.85; }
-    .btn-logout {
-      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
-      color: #fff; padding: 6px 16px; border-radius: 6px;
-      cursor: pointer; font-family: inherit; font-size: 0.88rem;
-      transition: background 0.2s;
-    }
-    .btn-logout:hover { background: rgba(255,255,255,0.3); }
-
-    .main-body { display: flex; flex: 1; }
-    .sidebar {
-      width: 220px; background: #fff;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.07);
-      padding: 18px 0;
-    }
-    .sidebar a {
-      display: block; padding: 12px 22px; color: #444;
-      text-decoration: none; font-size: 0.95rem;
-      border-right: 3px solid transparent;
-      transition: all 0.2s;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background: #eef3fa; color: #1a3c5e;
-      border-right-color: #1a3c5e;
-    }
-    .sidebar .admin-only { display: none; }
-    .content { flex: 1; padding: 24px; overflow-y: auto; }
-
-    /* ===== CARDS / SECTIONS ===== */
-    .section { display: none; }
-    .section.active { display: block; }
-    .card {
-      background: #fff; border-radius: 12px;
-      padding: 24px; margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    }
-    .card h3 { color: #1a3c5e; margin-bottom: 18px; font-size: 1.05rem; }
-    .form-row {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-      margin-bottom: 14px;
-    }
-    .form-row.single { grid-template-columns: 1fr; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 0.88rem; color: #555; font-weight: 500; }
-    .form-group input, .form-group select, .form-group textarea {
-      padding: 9px 12px; border: 1.5px solid #d0d7e2;
-      border-radius: 8px; font-size: 0.93rem; font-family: inherit;
-      transition: border-color 0.2s;
-    }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      outline: none; border-color: #2d6a9f;
-    }
-    .form-group textarea { resize: vertical; min-height: 80px; }
-    .btn-primary {
-      background: #1a3c5e; color: #fff; border: none;
-      padding: 10px 28px; border-radius: 8px;
-      cursor: pointer; font-family: inherit; font-size: 0.95rem;
-      transition: background 0.2s;
-    }
-    .btn-primary:hover { background: #2d6a9f; }
-    .btn-sm {
-      padding: 5px 12px; border-radius: 6px; font-size: 0.82rem;
-      cursor: pointer; font-family: inherit; border: none;
-    }
-    .btn-view { background: #e3f0fb; color: #1a3c5e; }
-    .btn-edit { background: #fff8e1; color: #f57f17; }
-    .btn-delete { background: #fdecea; color: #c62828; }
-
-    /* ===== TABLE ===== */
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    th { background: #1a3c5e; color: #fff; padding: 10px 12px; text-align: right; }
-    td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
-    tr:hover td { background: #f7faff; }
-    .badge {
-      display: inline-block; padding: 3px 10px;
-      border-radius: 12px; font-size: 0.8rem; font-weight: 500;
-    }
-    .badge-pending  { background: #fff8e1; color: #f57f17; }
-    .badge-progress { background: #e3f0fb; color: #1565c0; }
-    .badge-done     { background: #e8f5e9; color: #2e7d32; }
-    .badge-overdue  { background: #fdecea; color: #c62828; }
-
-    /* ===== DASHBOARD STATS ===== */
-    .stats-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 16px; margin-bottom: 24px;
-    }
-    .stat-card {
-      background: #fff; border-radius: 12px; padding: 20px;
-      text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    }
-    .stat-card .num { font-size: 2rem; font-weight: bold; color: #1a3c5e; }
-    .stat-card .lbl { font-size: 0.82rem; color: #888; margin-top: 4px; }
-    .stat-overdue .num  { color: #c62828; }
-    .stat-progress .num { color: #1565c0; }
-    .stat-done .num     { color: #2e7d32; }
-
-    /* ===== MODAL ===== */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45); z-index: 1000;
-      align-items: center; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal-box {
-      background: #fff; border-radius: 14px;
-      padding: 28px; width: 92%; max-width: 600px;
-      max-height: 90vh; overflow-y: auto;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    }
-    .modal-box h3 { color: #1a3c5e; margin-bottom: 20px; }
-    .modal-close {
-      float: left; background: #eee; border: none;
-      border-radius: 6px; padding: 4px 12px;
-      cursor: pointer; font-size: 1rem;
-    }
-    .detail-row {
-      display: flex; gap: 8px; margin-bottom: 10px;
-      font-size: 0.92rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;
-    }
-    .detail-row .dlbl { color: #888; min-width: 140px; }
-    .detail-row .dval { color: #222; flex: 1; }
-
-    @media(max-width:700px){
-      .sidebar { display: none; }
-      .form-row { grid-template-columns: 1fr; }
-      .stats-grid { grid-template-columns: 1fr 1fr; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سامانه مدیریت مصوبات</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg, #14214D, #1e3270);min-height:100vh;display:flex;align-items:center;justify-content:center}
+#loginPage{background:#fff;border-radius:20px;padding:50px 40px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}
+#loginPage h2{color:#667eea;margin-bottom:30px;font-size:1.6em}
+#loginPage .form-group{margin-bottom:18px;text-align:right}
+#loginPage label{display:block;margin-bottom:6px;font-weight:600;color:#444;font-size:.95em}
+#loginPage input{width:100%;padding:11px 14px;border:2px solid #ddd;border-radius:9px;font-size:1em;font-family:inherit;transition:border-color .3s}
+#loginPage input:focus{outline:none;border-color:#667eea}
+#loginError{color:#dc3545;font-size:.88em;margin-top:6px;min-height:20px}
+#mainApp{display:none;width:100%;min-height:100vh;flex-direction:row}
+.sidebar{width:280px;background:linear-gradient(180deg,#667eea,#764ba2);display:flex;flex-direction:column;padding:0;flex-shrink:0}
+.sidebar-logo{padding:28px 20px 20px;text-align:center;color:#fff;border-bottom:1px solid rgba(255,255,255,.2)}
+.sidebar-logo h3{font-size:1.1em;line-height:1.5}
+.sidebar-user{padding:16px 20px;color:rgba(255,255,255,.9);font-size:.85em;border-bottom:1px solid rgba(255,255,255,.2)}
+.sidebar-user strong{display:block;font-size:.95em;margin-bottom:3px;color:#fff}
+.sidebar nav{flex:1;padding:14px 0}
+.sidebar a{display:block;padding:13px 22px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.95em;transition:all .25s;border-right:3px solid transparent;cursor:pointer}
+.sidebar a:hover{background:rgba(255,255,255,.15);color:#fff}
+.sidebar a.active{background:rgba(255,255,255,.2);color:#fff;border-right-color:#fff;font-weight:600}
+.sidebar .btn-logout{margin:16px;padding:10px;background:rgba(220,53,69,.75);color:#fff;border:none;border-radius:9px;cursor:pointer;font-size:.9em;font-family:inherit;transition:background .3s}
+.sidebar .btn-logout:hover{background:rgba(220,53,69,1)}
+.sync-status{padding:8px 16px;font-size:.78em;text-align:center;color:rgba(255,255,255,.7);border-top:1px solid rgba(255,255,255,.15)}
+.sync-status.syncing{color:#ffd700}
+.sync-status.ok{color:#90ee90}
+.sync-status.error{color:#ff9999}
+.content{flex:1;background:#f0f2f7;overflow-y:auto;padding:30px}
+.section{display:none}.section.active{display:block}
+.page-title{font-size:1.6em;font-weight:700;color:#333;margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid #dee2e6}
+.card{background:#fff;border-radius:14px;padding:26px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:24px}
+.card h3{font-size:1.1em;color:#555;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid #eee}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:6px;font-weight:600;color:#444;font-size:.92em}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 13px;border:2px solid #ddd;border-radius:8px;font-size:.95em;font-family:inherit;transition:border-color .3s}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:#667eea}
+.form-group textarea{min-height:90px;resize:vertical}
+.btn{padding:11px 26px;border:none;border-radius:9px;font-size:.95em;font-weight:600;cursor:pointer;font-family:inherit;transition:all .3s}
+.btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+.btn-primary:hover{box-shadow:0 4px 14px rgba(102,126,234,.45);transform:translateY(-1px)}
+.btn-success{background:#28a745;color:#fff}
+.btn-success:hover{background:#218838}
+.btn-info{background:#17a2b8;color:#fff}
+.btn-info:hover{background:#138496}
+.btn-sm{padding:5px 12px;border:none;border-radius:6px;font-size:.82em;font-weight:600;cursor:pointer;font-family:inherit;transition:all .25s}
+.btn-view{background:#667eea;color:#fff}.btn-view:hover{background:#5a6fd6}
+.btn-edit{background:#ffc107;color:#333}.btn-edit:hover{background:#e0a800}
+.btn-delete{background:#dc3545;color:#fff}.btn-delete:hover{background:#c82333}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:26px}
+.stat-card{border-radius:14px;padding:22px 18px;color:#fff;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.stat-card h2{font-size:2.2em;margin-bottom:6px}
+.stat-card p{font-size:.9em;opacity:.9}
+.stat-total{background:linear-gradient(135deg,#667eea,#764ba2)}
+.stat-overdue{background:linear-gradient(135deg,#dc3545,#c82333)}
+.stat-progress{background:linear-gradient(135deg,#ffc107,#e0a800);color:#333}
+.stat-progress p{color:#555}
+.stat-done{background:linear-gradient(135deg,#28a745,#218838)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.93em}
+thead tr{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+thead th{padding:12px 14px;text-align:right;font-weight:600}
+tbody tr{border-bottom:1px solid #f0f0f0;transition:background .2s}
+tbody tr:hover{background:#f8f9ff}
+tbody td{padding:11px 14px;color:#444;vertical-align:middle}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.8em;font-weight:700}
+.badge-pending{background:#fff3cd;color:#856404}
+.badge-progress{background:#cfe2ff;color:#084298}
+.badge-done{background:#d1e7dd;color:#0a3622}
+.badge-overdue{background:#f8d7da;color:#842029}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.filter-bar select,.filter-bar input{padding:8px 13px;border:2px solid #ddd;border-radius:8px;font-size:.9em;font-family:inherit}
+.filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:#667eea}
+#modalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+#modalOverlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;min-width:420px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;padding-bottom:14px;border-bottom:2px solid #eee}
+.modal-header h3{color:#667eea;font-size:1.2em}
+.modal-close{background:none;border:none;font-size:1.5em;cursor:pointer;color:#999;line-height:1}
+.modal-close:hover{color:#333}
+.detail-row{display:flex;padding:10px 0;border-bottom:1px solid #f5f5f5}
+.dlbl{font-weight:600;color:#667eea;width:160px;flex-shrink:0}
+.dval{color:#444;flex:1}
+.report-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.report-card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:20px}
+.report-card h3{font-size:1.05em;color:#555;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.pie-bars{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px}
+.bar-item{background:#f8f9fa;border-radius:10px;padding:14px}
+.bar-label{font-size:.88em;color:#555;margin-bottom:7px;font-weight:600}
+.bar-track{background:#e9ecef;border-radius:6px;height:12px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;transition:width .5s}
+.bar-val{font-size:.82em;color:#888;margin-top:5px;text-align:left}
+@media(max-width:768px){
+  #mainApp{flex-direction:column}
+  .sidebar{width:100%;flex-direction:row;overflow-x:auto}
+  .sidebar nav{display:flex;flex-direction:row;padding:0}
+  .sidebar a{white-space:nowrap;padding:12px 14px;border-right:none;border-bottom:3px solid transparent}
+  .sidebar a.active{border-bottom-color:#fff;border-right-color:transparent}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .pie-bars{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
 
-<!-- ========== LOGIN PAGE ========== -->
 <div id="loginPage">
-  <div class="login-box">
-    <h2>🏭 سامانه مدیریت مصوبات</h2>
-    <p>لطفاً شماره پرسنلی خود را وارد کنید</p>
-    <input type="text"     id="loginUser" placeholder="شماره پرسنلی" />
-    <input type="password" id="loginPass" placeholder="رمز عبور" />
-    <button onclick="doLogin()">ورود</button>
-    <div class="login-error" id="loginError"></div>
+  <h2><img alt="" src="data:image/png;base64,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" /> سامانه مدیریت مصوبات</h2>
+  <div class="form-group">
+    <label>شماره پرسنلی:</label>
+    <input type="text" id="loginUser" placeholder="شماره پرسنلی خود را وارد کنید">
   </div>
+  <div class="form-group">
+    <label>رمز عبور (= شماره پرسنلی):</label>
+    <input type="password" id="loginPass" placeholder="رمز عبور">
+  </div>
+  <div id="loginError"></div>
+  <button class="btn btn-primary" onclick="doLogin()" style="width:100%;margin-top:8px">ورود</button>
 </div>
 
-<!-- ========== MAIN APP ========== -->
 <div id="mainApp">
-  <div class="topbar">
-    <div class="topbar-title">📋 سامانه مدیریت مصوبات</div>
-    <div class="topbar-user">
-      <div class="user-info-badge">
-        <span class="uname" id="topUserName"></span>
-        <span class="urole" id="topUserRole"></span>
-      </div>
-      <button class="btn-logout" onclick="doLogout()">خروج</button>
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <h3><img alt="" src="data:image/png;base64,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" /> سامانه<br>مدیریت مصوبات</h3>
     </div>
+    <div class="sidebar-user">
+      <strong id="topUserName"></strong>
+      <span id="topUserRole"></span>
+    </div>
+    <nav>
+      <a onclick="showSection('dashboard')" id="nav-dashboard">📊 داشبورد</a>
+      <a onclick="showSection('meetings')"  id="nav-meetings">📅 جلسات</a>
+      <a onclick="showSection('resolutions')" id="nav-resolutions">📋 مصوبات</a>
+      <a onclick="showSection('newMeeting')" id="nav-newMeeting" class="admin-only">➕ جلسه جدید</a>
+      <a onclick="showSection('newResolution')" id="nav-newResolution" class="admin-only">➕ مصوبه جدید</a>
+      <a onclick="showSection('report')" id="nav-report" class="admin-only">📈 گزارش و اکسل</a>
+    </nav>
+    <div class="sync-status" id="syncStatus">⏳ در حال اتصال...</div>
+    <button class="btn-logout" onclick="doLogout()">خروج از سیستم</button>
   </div>
-  <div class="main-body">
-    <div class="sidebar" id="sidebar">
-      <a href="#" onclick="showSection('dashboard')" class="active">📊 داشبورد</a>
-      <a href="#" onclick="showSection('meetings')">📅 جلسات</a>
-      <a href="#" onclick="showSection('resolutions')">📝 مصوبات</a>
-      <a href="#" onclick="showSection('newMeeting')"    class="admin-only" id="sideNewMeeting">➕ ثبت جلسه</a>
-      <a href="#" onclick="showSection('newResolution')" class="admin-only" id="sideNewResolution">✏️ ثبت مصوبه</a>
+
+  <div class="content">
+
+    <div class="section" id="sec-dashboard">
+      <div class="page-title">📊 داشبورد</div>
+      <div class="stats-grid">
+        <div class="stat-card stat-total"><h2 id="statTotal">0</h2><p>کل مصوبات</p></div>
+        <div class="stat-card stat-overdue"><h2 id="statOverdue">0</h2><p>تاریخ گذشته</p></div>
+        <div class="stat-card stat-progress"><h2 id="statProgress">0</h2><p>در دست بررسی</p></div>
+        <div class="stat-card stat-done"><h2 id="statDone">0</h2><p>انجام شده</p></div>
+      </div>
+      <div class="card">
+        <h3>⚠️ مصوبات تاریخ گذشته</h3>
+        <div class="table-wrap">
+          <table><thead><tr><th>کد</th><th>عنوان</th><th>متولی</th><th>مهلت</th><th>وضعیت</th></tr></thead>
+          <tbody id="tbodyOverdue"></tbody></table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🔄 مصوبات در دست بررسی</h3>
+        <div class="table-wrap">
+          <table><thead><tr><th>کد</th><th>عنوان</th><th>متولی همکار</th><th>مهلت</th><th>عملیات</th></tr></thead>
+          <tbody id="tbodyInProgress"></tbody></table>
+        </div>
+      </div>
     </div>
-    <div class="content">
 
-      <!-- DASHBOARD -->
-      <div class="section active" id="sec-dashboard">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="num" id="statTotal">0</div>
-            <div class="lbl">کل مصوبات</div>
-          </div>
-          <div class="stat-card stat-overdue">
-            <div class="num" id="statOverdue">0</div>
-            <div class="lbl">گذشته‌الموعد</div>
-          </div>
-          <div class="stat-card stat-progress">
-            <div class="num" id="statProgress">0</div>
-            <div class="lbl">در دست بررسی</div>
-          </div>
-          <div class="stat-card stat-done">
-            <div class="num" id="statDone">0</div>
-            <div class="lbl">انجام شده</div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>⚠️ مصوبات گذشته‌الموعد</h3>
-          <table>
-            <thead><tr>
-              <th>کد</th><th>عنوان</th><th>متولی</th><th>مهلت</th><th>وضعیت</th>
-            </tr></thead>
-            <tbody id="tbodyOverdue"></tbody>
-          </table>
-        </div>
-        <div class="card">
-          <h3>🔄 مصوبات در دست بررسی</h3>
-          <table>
-            <thead><tr>
-              <th>کد</th><th>عنوان</th><th>متولی همکار</th><th>مهلت</th><th>عملیات</th>
-            </tr></thead>
-            <tbody id="tbodyInProgress"></tbody>
-          </table>
+    <div class="section" id="sec-meetings">
+      <div class="page-title">📅 لیست جلسات</div>
+      <div class="filter-bar">
+        <input type="text" id="searchMeetings" placeholder="🔍 جستجو در جلسات..." oninput="renderMeetings()" style="flex:1;min-width:200px">
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table><thead><tr><th>#</th><th>عنوان جلسه</th><th>تاریخ</th><th>مکان</th><th>دستور جلسه</th><th>عملیات</th></tr></thead>
+          <tbody id="tbodyMeetings"></tbody></table>
         </div>
       </div>
+    </div>
 
-      <!-- MEETINGS LIST -->
-      <div class="section" id="sec-meetings">
-        <div class="card">
-          <h3>📅 لیست جلسات</h3>
-          <table>
-            <thead><tr>
-              <th>شماره</th><th>عنوان</th><th>تاریخ</th><th>مکان</th><th>دستور جلسه</th><th>عملیات</th>
-            </tr></thead>
-            <tbody id="tbodyMeetings"></tbody>
-          </table>
+    <div class="section" id="sec-resolutions">
+      <div class="page-title">📋 مصوبات</div>
+      <div class="filter-bar">
+        <select id="filterStatus" onchange="renderResolutions()">
+          <option value="">همه وضعیت‌ها</option>
+          <option value="pending">در انتظار</option>
+          <option value="progress">در دست بررسی</option>
+          <option value="done">انجام شده</option>
+        </select>
+        <input type="text" id="searchResolutions" placeholder="🔍 جستجو..." oninput="renderResolutions()" style="flex:1;min-width:180px">
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table><thead><tr><th>کد</th><th>عنوان</th><th>متولی اصلی</th><th>متولی همکار</th><th>مهلت</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+          <tbody id="tbodyResolutions"></tbody></table>
         </div>
       </div>
+    </div>
 
-      <!-- RESOLUTIONS LIST -->
-      <div class="section" id="sec-resolutions">
-        <div class="card">
-          <h3>📝 لیست مصوبات</h3>
-          <div style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">
-            <select id="filterStatus" onchange="renderResolutions()"
-              style="padding:7px 12px;border-radius:8px;border:1.5px solid #d0d7e2;font-family:inherit">
-              <option value="">همه وضعیت‌ها</option>
+    <div class="section" id="sec-newMeeting">
+      <div class="page-title">➕ ثبت جلسه جدید</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group"><label>عنوان جلسه *</label><input type="text" id="mTitle" placeholder="عنوان جلسه"></div>
+          <div class="form-group"><label>تاریخ *</label><input type="text" id="mDate" placeholder="مثال: ۱۴۰۴/۰۳/۱۵"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>مکان</label><input type="text" id="mPlace" placeholder="مکان برگزاری"></div>
+          <div class="form-group"><label>دبیر جلسه</label><input type="text" id="mSecretary" placeholder="نام دبیر جلسه"></div>
+        </div>
+        <div class="form-group"><label>دستور جلسه</label><textarea id="mAgenda" placeholder="موضوعات مطرح شده در جلسه..."></textarea></div>
+        <button class="btn btn-primary" onclick="saveMeeting()">💾 ثبت جلسه</button>
+      </div>
+    </div>
+
+    <div class="section" id="sec-newResolution">
+      <div class="page-title">➕ ثبت مصوبه جدید</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group"><label>کد مصوبه</label><input type="text" id="rCode" readonly style="background:#f8f9fa"></div>
+          <div class="form-group"><label>جلسه مرتبط</label>
+            <select id="rMeeting"><option value="">انتخاب جلسه</option></select>
+          </div>
+        </div>
+        <div class="form-group"><label>عنوان مصوبه *</label><input type="text" id="rTitle" placeholder="عنوان کوتاه مصوبه"></div>
+        <div class="form-group"><label>شرح مفاد</label><textarea id="rDesc" placeholder="توضیحات تکمیلی..."></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>متولی اصلی *</label>
+            <select id="rOwner"><option value="">انتخاب...</option></select>
+          </div>
+          <div class="form-group"><label>متولی همکار</label>
+            <select id="rCoOwner"><option value="">انتخاب...</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>مهلت پاسخگویی *</label><input type="text" id="rDeadline" placeholder="مثال: ۱۴۰۴/۰۶/۳۱"></div>
+          <div class="form-group"><label>وضعیت اولیه</label>
+            <select id="rStatus">
               <option value="pending">در انتظار</option>
               <option value="progress">در دست بررسی</option>
               <option value="done">انجام شده</option>
             </select>
           </div>
-          <table>
+        </div>
+        <button class="btn btn-primary" onclick="saveResolution()">💾 ثبت مصوبه</button>
+      </div>
+    </div>
+
+    <div class="section" id="sec-report">
+      <div class="page-title">📈 گزارش و خروجی اکسل</div>
+      <div class="report-card">
+        <h3>📊 وضعیت کلی مصوبات</h3>
+        <div class="pie-bars" id="reportBars"></div>
+      </div>
+      <div class="report-card">
+        <h3>🔍 فیلتر گزارش</h3>
+        <div class="filter-bar">
+          <select id="rptStatus">
+            <option value="">همه وضعیت‌ها</option>
+            <option value="pending">در انتظار</option>
+            <option value="progress">در دست بررسی</option>
+            <option value="done">انجام شده</option>
+            <option value="overdue">گذشته‌الموعد</option>
+          </select>
+          <select id="rptOwner"><option value="">همه متولیان</option></select>
+          <select id="rptMeeting"><option value="">همه جلسات</option></select>
+          <input type="text" id="rptSearch" placeholder="🔍 جستجو در عنوان..." style="flex:1;min-width:160px">
+          <button class="btn btn-primary" onclick="applyReportFilter()">اعمال فیلتر</button>
+          <button class="btn btn-success" onclick="exportExcel()">📥 خروجی اکسل</button>
+        </div>
+      </div>
+      <div class="report-card">
+        <h3>📋 جدول مصوبات</h3>
+        <div class="table-wrap">
+          <table id="reportTable">
             <thead><tr>
-              <th>کد</th><th>عنوان</th><th>متولی</th><th>متولی همکار</th><th>مهلت</th><th>وضعیت</th><th>عملیات</th>
+              <th>کد</th><th>عنوان مصوبه</th><th>جلسه</th>
+              <th>متولی اصلی</th><th>متولی همکار</th>
+              <th>مهلت</th><th>وضعیت</th>
             </tr></thead>
-            <tbody id="tbodyResolutions"></tbody>
+            <tbody id="tbodyReport"></tbody>
           </table>
         </div>
       </div>
-
-      <!-- NEW MEETING -->
-      <div class="section" id="sec-newMeeting">
-        <div class="card">
-          <h3>➕ ثبت جلسه جدید</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label>عنوان جلسه</label>
-              <input type="text" id="mTitle" placeholder="عنوان جلسه" />
-            </div>
-            <div class="form-group">
-              <label>تاریخ جلسه (شمسی)</label>
-              <input type="text" id="mDate" placeholder="مثال: ۱۴۰۵/۰۳/۱۵" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>مکان</label>
-              <input type="text" id="mPlace" placeholder="محل برگزاری" />
-            </div>
-            <div class="form-group">
-              <label>دبیر جلسه</label>
-              <input type="text" id="mSecretary" placeholder="نام دبیر جلسه" />
-            </div>
-          </div>
-          <div class="form-row single">
-            <div class="form-group">
-              <label>دستور جلسه</label>
-              <textarea id="mAgenda" placeholder="دستور جلسه را وارد کنید"></textarea>
-            </div>
-          </div>
-          <button class="btn-primary" onclick="saveMeeting()">ذخیره جلسه</button>
-        </div>
-      </div>
-
-      <!-- NEW RESOLUTION -->
-      <div class="section" id="sec-newResolution">
-        <div class="card">
-          <h3>✏️ ثبت مصوبه جدید</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label>کد مصوبه (خودکار)</label>
-              <input type="text" id="rCode" readonly style="background:#f5f5f5" />
-            </div>
-            <div class="form-group">
-              <label>جلسه مرتبط</label>
-              <select id="rMeeting"><option value="">انتخاب جلسه</option></select>
-            </div>
-          </div>
-          <div class="form-row single">
-            <div class="form-group">
-              <label>عنوان مصوبه</label>
-              <input type="text" id="rTitle" placeholder="عنوان مصوبه" />
-            </div>
-          </div>
-          <div class="form-row single">
-            <div class="form-group">
-              <label>شرح مفاد</label>
-              <textarea id="rDesc" placeholder="شرح کامل مفاد مصوبه"></textarea>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>متولی اصلی</label>
-              <select id="rOwner"><option value="">انتخاب متولی</option></select>
-            </div>
-            <div class="form-group">
-              <label>متولی همکار</label>
-              <select id="rCoOwner"><option value="">انتخاب متولی همکار</option></select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>مهلت پاسخگویی (شمسی)</label>
-              <input type="text" id="rDeadline" placeholder="مثال: ۱۴۰۵/۰۴/۳۰" />
-            </div>
-            <div class="form-group">
-              <label>وضعیت اولیه</label>
-              <select id="rStatus">
-                <option value="pending">در انتظار</option>
-                <option value="progress">در دست بررسی</option>
-                <option value="done">انجام شده</option>
-              </select>
-            </div>
-          </div>
-          <button class="btn-primary" onclick="saveResolution()">ذخیره مصوبه</button>
-        </div>
-      </div>
-
     </div>
+
   </div>
 </div>
 
-<!-- MODAL -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <h3 id="modalTitle">جزئیات</h3>
+<div id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle"></h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
     <div id="modalBody"></div>
   </div>
 </div>
 
 <script>
+// ============================================================
+// CONFIG — $2a$10$.usX3YJ6WJS.rHF84CS2i.yUh5JTKs3qR8uL/uoQlAYO3WPLVwWgi
+// ============================================================
+const BIN_ID  = '6841878ef5f4af5e29b86632';
+const API_KEY = '$2a$10$GyygyAp.nMomyok0VnB3FO/8Pcj7N/AexUl18RFJiDJUP76iI3jn.';
+
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const POLL_INTERVAL = 30000; // هر ۳۰ ثانیه یکبار refresh
+
+// ============================================================
+// USERS
+// ============================================================
 const USERS = [
-  { id:'480075',   name:'مریم آقاجانپور',         role:'کارشناس برنامه‌ریزی استراتژیک', admin:true  },
-  { id:'4420023',  name:'فریبا خلج',               role:'کارشناس تضمین کیفیت',           admin:false },
-  { id:'4920049',  name:'دامون فضلی',              role:'مدیر سیستم‌ها و روش‌ها',         admin:false },
-  { id:'11111111', name:'محمد بنی اسدی',           role:'قائم مقام مدیر عامل',            admin:false },
-  { id:'4420085',  name:'علیرضا حاجی علیمحمدی',   role:'مدیر تحقیق و تکوین محصول',      admin:false },
-  { id:'1234567',  name:'حمید ریاضی',              role:'مشاور فنی',                      admin:false },
-  { id:'4960037',  name:'سولماز اخلاقی',           role:'مدیر والی',                      admin:false },
-  { id:'4970017',  name:'مسعود آروین',             role:'مدیر فروش',                      admin:false },
-  { id:'4930089',  name:'آریا دانش مایه',          role:'مدیر ریخته‌گری و پوششکاری',      admin:false },
-  { id:'4850146',  name:'علی طاهری نسب',           role:'مدیر ماشینکاری و ابزارسازی',    admin:false },
-  { id:'4850162',  name:'محمدرضا رحمانی',          role:'مدیر کنترل کیفیت و آزمایشگاه',  admin:false },
-  { id:'4860011',  name:'اسماعیل رحمانی',          role:'سرپرست منابع انسانی',            admin:false },
-  { id:'22222222', name:'قدرت‌اله سلیمانی',        role:'کارشناس ایمنی و بهداشت',        admin:false },
-  { id:'4960039',  name:'سعید خدادادپیگی',         role:'رئیس مهندسی صنایع',             admin:false },
-  { id:'4890001',  name:'مهدی محمودی',             role:'رئیس انبار و مدیریت ابزار',     admin:false },
-  { id:'4990190',  name:'یداله منافی',             role:'کارشناس تامین داخل',            admin:false },
-  { id:'4940052',  name:'آرش بلوری',               role:'سرپرست فناوری اطلاعات',         admin:false },
+  { id:'4980075', name:'مریم آقاجانپور',          role:'کارشناس برنامه‌ریزی استراتژیک',    admin:true  },
+  { id:'4420023', name:'فریبا خلج',               role:'کارشناس تضمین کیفیت',              admin:false },
+  { id:'4920049', name:'دامون فضلی',              role:'مدیر سیستم‌ها و روش‌ها',           admin:false },
+  { id:'1111111', name:'محمد بنی اسدی',           role:'قائم مقام مدیرعامل',               admin:false },
+  { id:'4420085', name:'علیرضا حاجی علیمحمدی',   role:'مدیر تحقیق و تکوین محصول',         admin:false },
+  { id:'1234567', name:'حمید ریاضی',              role:'مشاور فنی',                         admin:false },
+  { id:'4960037', name:'سولماز اخلاقی',           role:'مدیر مالی',                         admin:false },
+  { id:'4970017', name:'مسعود آروین',             role:'مدیر فروش',                         admin:false },
+  { id:'4930089', name:'آریا دانش مایه',          role:'مدیر ریخته‌گری و پوششکاری',        admin:false },
+  { id:'4850146', name:'علی طاهری نسب',           role:'مدیر ماشینکاری و ابزارسازی',       admin:false },
+  { id:'4850162', name:'محمدرضا رحمانی',          role:'مدیر کنترل کیفیت و آزمایشگاه',     admin:false },
+  { id:'4860011', name:'اسماعیل رحمانی',          role:'سرپرست منابع انسانی',               admin:false },
+  { id:'2222222', name:'قدرت اله سلیمانی',        role:'کارشناس ایمنی و بهداشت',           admin:false },
+  { id:'4960039', name:'سعید خدادادبیگی',         role:'رئیس مهندسی صنایع',                admin:false },
+  { id:'4890001', name:'مهدی محمودی',             role:'رئیس انبارها و مدیریت ابزار',      admin:false },
+  { id:'4990190', name:'یداله منافی',             role:'کارشناس تامین داخل',               admin:false },
+  { id:'4940052', name:'آرش بلوری',               role:'سرپرست فناوری اطلاعات',            admin:false }
 ];
 
-let currentUser = null;
-let meetings    = JSON.parse(localStorage.getItem('sp_meetings')    || '[]');
-let resolutions = JSON.parse(localStorage.getItem('sp_resolutions') || '[]');
+let currentUser   = null;
+let meetings      = [];
+let resolutions   = [];
+let reportFiltered = [];
+let pollTimer     = null;
+let lastHash      = '';
 
-/* ---- AUTH ---- */
+// ============================================================
+// SYNC STATUS UI
+// ============================================================
+function setSyncStatus(state, msg) {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  el.className = 'sync-status ' + state;
+  el.textContent = msg;
+}
+
+// ============================================================
+// CLOUD SYNC
+// ============================================================
+async function loadFromCloud() {
+  setSyncStatus('syncing', '🔄 در حال دریافت...');
+  try {
+    const res = await fetch(BIN_URL + '/latest', {
+      headers: { 'X-Master-Key': API_KEY }
+    });
+    if (!res.ok) throw new Error('load failed');
+    const json = await res.json();
+    const newHash = JSON.stringify(json.record);
+
+    // فقط اگر داده تغییر کرده باشد UI را رفرش کن
+    if (newHash !== lastHash) {
+      lastHash    = newHash;
+      meetings    = json.record.meetings    || [];
+      resolutions = json.record.resolutions || [];
+      // بکاپ محلی
+      localStorage.setItem('sp_meetings',    JSON.stringify(meetings));
+      localStorage.setItem('sp_resolutions', JSON.stringify(resolutions));
+      refreshUI();
+    }
+    setSyncStatus('ok', '✅ همگام‌سازی شد');
+  } catch(e) {
+    // fallback
+    meetings    = JSON.parse(localStorage.getItem('sp_meetings')    || '[]');
+    resolutions = JSON.parse(localStorage.getItem('sp_resolutions') || '[]');
+    setSyncStatus('error', '⚠️ حالت آفلاین');
+    refreshUI();
+  }
+}
+
+async function saveToCloud() {
+  setSyncStatus('syncing', '🔄 در حال ذخیره...');
+  const data = { meetings, resolutions };
+  localStorage.setItem('sp_meetings',    JSON.stringify(meetings));
+  localStorage.setItem('sp_resolutions', JSON.stringify(resolutions));
+  lastHash = JSON.stringify(data);
+  try {
+    const res = await fetch(BIN_URL, {
+      method : 'PUT',
+      headers: { 'Content-Type':'application/json', 'X-Master-Key': API_KEY },
+      body   : JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('save failed');
+    setSyncStatus('ok', '✅ ذخیره شد');
+  } catch(e) {
+    setSyncStatus('error', '⚠️ ذخیره محلی (آفلاین)');
+  }
+}
+
+// رفرش تمام بخش‌های فعال
+function refreshUI() {
+  if (!currentUser) return;
+  fillUserSelects();
+  fillMeetingSelect();
+  generateCode();
+  renderMeetings();
+  renderResolutions();
+  renderDashboard();
+  // اگر صفحه گزارش باز بود آن را هم رفرش کن
+  const reportSec = document.getElementById('sec-report');
+  if (reportSec && reportSec.classList.contains('active') && currentUser.admin) {
+    renderReport();
+  }
+}
+
+// شروع polling برای کاربران غیر ادمین (و همه)
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(async () => {
+    if (currentUser) await loadFromCloud();
+  }, POLL_INTERVAL);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+// ============================================================
+// AUTH
+// ============================================================
 function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
@@ -428,11 +444,11 @@ function doLogin() {
     return;
   }
   currentUser = user;
-  document.getElementById('loginError').textContent = '';
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('mainApp').style.display   = 'flex';
-  document.getElementById('topUserName').textContent = user.name;
-  document.getElementById('topUserRole').textContent = user.role;
+  document.getElementById('loginError').textContent   = '';
+  document.getElementById('loginPage').style.display  = 'none';
+  document.getElementById('mainApp').style.display    = 'flex';
+  document.getElementById('topUserName').textContent  = user.name;
+  document.getElementById('topUserRole').textContent  = user.role;
   document.querySelectorAll('.admin-only').forEach(el => {
     el.style.display = user.admin ? 'block' : 'none';
   });
@@ -440,29 +456,71 @@ function doLogin() {
 }
 
 function doLogout() {
+  stopPolling();
   currentUser = null;
+  lastHash    = '';
   document.getElementById('mainApp').style.display   = 'none';
-  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginPage').style.display = 'block';
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
-  showSection('dashboard');
 }
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    const lp = document.getElementById('loginPage');
-    if (lp.style.display !== 'none') doLogin();
-  }
-});
-
-/* ---- INIT ---- */
-function initApp() {
+async function initApp() {
+  await loadFromCloud();
   fillUserSelects();
   fillMeetingSelect();
   generateCode();
-  renderDashboard();
   renderMeetings();
   renderResolutions();
+  renderDashboard();
+  showSection('dashboard');
+  startPolling(); // شروع polling بعد از لاگین
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showSection(name) {
+  const adminSections = ['newMeeting','newResolution','report'];
+  if (adminSections.includes(name) && (!currentUser || !currentUser.admin)) {
+    alert('دسترسی فقط برای مدیر سامانه مجاز است'); return false;
+  }
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  if (name === 'newResolution') generateCode();
+  if (name === 'report') renderReport();
+  return false;
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function isOverdue(deadline, status) {
+  if (status === 'done' || !deadline) return false;
+  const latin = deadline.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+  const parts = latin.split('/');
+  if (parts.length !== 3) return false;
+  const jy = parseInt(parts[0]), jm = parseInt(parts[1]), jd = parseInt(parts[2]);
+  return new Date(jy + 621, jm - 1, jd) < new Date();
+}
+
+function statusLabel(status, deadline) {
+  if (isOverdue(deadline, status)) return '<span class="badge badge-overdue">گذشته‌الموعد</span>';
+  if (status === 'pending')  return '<span class="badge badge-pending">در انتظار</span>';
+  if (status === 'progress') return '<span class="badge badge-progress">در دست بررسی</span>';
+  if (status === 'done')     return '<span class="badge badge-done">انجام شده</span>';
+  return status;
+}
+
+function statusText(status, deadline) {
+  if (isOverdue(deadline, status)) return 'تاریخ گذشته';
+  if (status === 'pending')  return 'در انتظار';
+  if (status === 'progress') return 'در دست بررسی';
+  if (status === 'done')     return 'انجام شده';
+  return status;
 }
 
 function fillUserSelects() {
@@ -471,92 +529,68 @@ function fillUserSelects() {
     sel.innerHTML = '<option value="">انتخاب...</option>';
     USERS.forEach(u => {
       const o = document.createElement('option');
-      o.value = u.name;
-      o.textContent = u.name + ' - ' + u.role;
+      o.value = u.name; o.textContent = u.name + ' — ' + u.role;
       sel.appendChild(o);
     });
   });
 }
 
 function fillMeetingSelect() {
-  const sel = document.getElementById('rMeeting');
-  sel.innerHTML = '<option value="">انتخاب جلسه</option>';
-  meetings.forEach(m => {
-    const o = document.createElement('option');
-    o.value = m.id;
-    o.textContent = m.title + ' (' + m.date + ')';
-    sel.appendChild(o);
+  ['rMeeting','rptMeeting'].forEach(sid => {
+    const sel = document.getElementById(sid); if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = sid === 'rMeeting'
+      ? '<option value="">انتخاب جلسه</option>'
+      : '<option value="">همه جلسات</option>';
+    meetings.forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.id; o.textContent = m.title + ' (' + m.date + ')';
+      sel.appendChild(o);
+    });
+    if (prev) sel.value = prev;
   });
 }
 
 function generateCode() {
-  const num = resolutions.length + 1;
-  document.getElementById('rCode').value = 'SP-' + String(num).padStart(4,'0');
+  const el = document.getElementById('rCode'); if (!el) return;
+  el.value = 'SP-' + String(resolutions.length + 1).padStart(4,'0');
 }
 
-/* ---- NAV ---- */
-function showSection(name) {
-  if ((name==='newMeeting'||name==='newResolution') && (!currentUser||!currentUser.admin)) {
-    alert('دسترسی فقط برای مدیر سامانه مجاز است'); return;
-  }
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('sec-'+name).classList.add('active');
-  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
-  if (name==='newResolution') generateCode();
-  return false;
-}
-
-/* ---- SAVE MEETING ---- */
-function saveMeeting() {
-  if (!currentUser||!currentUser.admin) { alert('دسترسی ندارید'); return; }
+// ============================================================
+// MEETINGS
+// ============================================================
+async function saveMeeting() {
+  if (!currentUser || !currentUser.admin) { alert('دسترسی ندارید'); return; }
   const title     = document.getElementById('mTitle').value.trim();
   const date      = document.getElementById('mDate').value.trim();
   const place     = document.getElementById('mPlace').value.trim();
   const secretary = document.getElementById('mSecretary').value.trim();
   const agenda    = document.getElementById('mAgenda').value.trim();
-  if (!title||!date) { alert('عنوان و تاریخ جلسه الزامی است'); return; }
-  meetings.push({ id:Date.now().toString(), title, date, place, secretary, agenda });
-  localStorage.setItem('sp_meetings', JSON.stringify(meetings));
-  ['mTitle','mDate','mPlace','mSecretary','mAgenda'].forEach(id => document.getElementById(id).value='');
-  fillMeetingSelect(); renderMeetings(); renderDashboard();
+  if (!title || !date) { alert('عنوان و تاریخ جلسه الزامی است'); return; }
+  meetings.push({ id: Date.now().toString(), title, date, place, secretary, agenda });
+  await saveToCloud();
+  ['mTitle','mDate','mPlace','mSecretary','mAgenda'].forEach(id => document.getElementById(id).value = '');
+  fillMeetingSelect();
+  renderMeetings();
+  renderDashboard();
   alert('جلسه با موفقیت ثبت شد');
   showSection('meetings');
 }
 
-/* ---- SAVE RESOLUTION ---- */
-function saveResolution() {
-  if (!currentUser||!currentUser.admin) { alert('دسترسی ندارید'); return; }
-  const code      = document.getElementById('rCode').value;
-  const meetingId = document.getElementById('rMeeting').value;
-  const title     = document.getElementById('rTitle').value.trim();
-  const desc      = document.getElementById('rDesc').value.trim();
-  const owner     = document.getElementById('rOwner').value;
-  const coOwner   = document.getElementById('rCoOwner').value;
-  const deadline  = document.getElementById('rDeadline').value.trim();
-  const status    = document.getElementById('rStatus').value;
-  if (!title||!owner||!deadline) { alert('عنوان، متولی و مهلت الزامی است'); return; }
-  resolutions.push({ id:Date.now().toString(), code, meetingId, title, desc, owner, coOwner, deadline, status });
-  localStorage.setItem('sp_resolutions', JSON.stringify(resolutions));
-  ['rMeeting','rOwner','rCoOwner','rStatus'].forEach(id => {
-    const el=document.getElementById(id); if(el.tagName==='SELECT') el.selectedIndex=0;
-  });
-  ['rTitle','rDesc','rDeadline'].forEach(id => document.getElementById(id).value='');
-  generateCode(); renderResolutions(); renderDashboard();
-  alert('مصوبه با کد '+code+' ثبت شد');
-  showSection('resolutions');
-}
-
-/* ---- MEETINGS ---- */
 function renderMeetings() {
   const tbody = document.getElementById('tbodyMeetings');
+  const q = (document.getElementById('searchMeetings').value || '').toLowerCase();
   tbody.innerHTML = '';
-  if (!meetings.length) {
-    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa">جلسه‌ای ثبت نشده</td></tr>'; return;
+  const list = meetings.slice().reverse().filter(m =>
+    !q || m.title.includes(q) || (m.place||'').includes(q)
+  );
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px">جلسه‌ای یافت نشد</td></tr>'; return;
   }
-  meetings.slice().reverse().forEach(m => {
+  list.forEach((m,i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${m.id.slice(-4)}</td><td>${m.title}</td><td>${m.date}</td>
+      <td>${i+1}</td><td>${m.title}</td><td>${m.date}</td>
       <td>${m.place||'-'}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.agenda||'-'}</td>
       <td>
@@ -568,7 +602,7 @@ function renderMeetings() {
 }
 
 function viewMeeting(id) {
-  const m = meetings.find(x=>x.id===id); if(!m) return;
+  const m = meetings.find(x => x.id === id); if (!m) return;
   document.getElementById('modalTitle').textContent = m.title;
   document.getElementById('modalBody').innerHTML = `
     <div class="detail-row"><span class="dlbl">تاریخ:</span><span class="dval">${m.date}</span></div>
@@ -578,52 +612,64 @@ function viewMeeting(id) {
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function deleteMeeting(id) {
-  if (!currentUser||!currentUser.admin) return;
+async function deleteMeeting(id) {
+  if (!currentUser || !currentUser.admin) return;
   if (!confirm('آیا مطمئن هستید؟')) return;
-  meetings = meetings.filter(x=>x.id!==id);
-  localStorage.setItem('sp_meetings',JSON.stringify(meetings));
-  fillMeetingSelect(); renderMeetings(); renderDashboard();
+  meetings = meetings.filter(x => x.id !== id);
+  await saveToCloud();
+  fillMeetingSelect();
+  renderMeetings();
+  renderDashboard();
 }
 
-/* ---- HELPERS ---- */
-function isOverdue(deadline, status) {
-  if (status==='done'||!deadline) return false;
-  const latin = deadline.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-  const parts = latin.split('/');
-  if (parts.length!==3) return false;
-  const jy=parseInt(parts[0]), jm=parseInt(parts[1]), jd=parseInt(parts[2]);
-  return new Date(jy+621, jm-1, jd) < new Date();
+// ============================================================
+// RESOLUTIONS
+// ============================================================
+async function saveResolution() {
+  if (!currentUser || !currentUser.admin) { alert('دسترسی ندارید'); return; }
+  const code      = document.getElementById('rCode').value;
+  const meetingId = document.getElementById('rMeeting').value;
+  const title     = document.getElementById('rTitle').value.trim();
+  const desc      = document.getElementById('rDesc').value.trim();
+  const owner     = document.getElementById('rOwner').value;
+  const coOwner   = document.getElementById('rCoOwner').value;
+  const deadline  = document.getElementById('rDeadline').value.trim();
+  const status    = document.getElementById('rStatus').value;
+  if (!title || !owner || !deadline) { alert('عنوان، متولی و مهلت الزامی است'); return; }
+  resolutions.push({ id: Date.now().toString(), code, meetingId, title, desc, owner, coOwner, deadline, status });
+  await saveToCloud();
+  ['rTitle','rDesc','rDeadline'].forEach(id => document.getElementById(id).value = '');
+  ['rMeeting','rOwner','rCoOwner','rStatus'].forEach(id => {
+    const el = document.getElementById(id); if (el && el.tagName === 'SELECT') el.selectedIndex = 0;
+  });
+  generateCode();
+  renderResolutions();
+  renderDashboard();
+  alert('مصوبه با کد ' + code + ' ثبت شد');
+  showSection('resolutions');
 }
 
-function statusLabel(status, deadline) {
-  if (isOverdue(deadline,status))  return '<span class="badge badge-overdue">گذشته‌الموعد</span>';
-  if (status==='pending')  return '<span class="badge badge-pending">در انتظار</span>';
-  if (status==='progress') return '<span class="badge badge-progress">در دست بررسی</span>';
-  if (status==='done')     return '<span class="badge badge-done">انجام شده</span>';
-  return status;
-}
-
-/* ---- RESOLUTIONS ---- */
 function renderResolutions() {
   const tbody  = document.getElementById('tbodyResolutions');
   const filter = document.getElementById('filterStatus').value;
+  const q      = (document.getElementById('searchResolutions').value || '').toLowerCase();
   tbody.innerHTML = '';
   let list = resolutions.slice().reverse();
-  if (filter) list = list.filter(r=>r.status===filter);
+  if (filter) list = list.filter(r => r.status === filter);
+  if (q) list = list.filter(r => r.title.includes(q) || r.owner.includes(q) || r.code.includes(q));
   if (!list.length) {
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#aaa">مصوبه‌ای یافت نشد</td></tr>'; return;
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">مصوبه‌ای یافت نشد</td></tr>'; return;
   }
   list.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${r.code}</td><td>${r.title}</td><td>${r.owner}</td>
       <td>${r.coOwner||'-'}</td><td>${r.deadline}</td>
-      <td>${statusLabel(r.status,r.deadline)}</td>
+      <td>${statusLabel(r.status, r.deadline)}</td>
       <td>
         <button class="btn-sm btn-view" onclick="viewResolution('${r.id}')">مشاهده</button>
         ${currentUser&&currentUser.admin?`
-          <button class="btn-sm btn-edit"   onclick="changeStatus('${r.id}')">تغییر وضعیت</button>
+          <button class="btn-sm btn-edit" onclick="changeStatus('${r.id}')">تغییر وضعیت</button>
           <button class="btn-sm btn-delete" onclick="deleteResolution('${r.id}')">حذف</button>`:''}
       </td>`;
     tbody.appendChild(tr);
@@ -631,43 +677,47 @@ function renderResolutions() {
 }
 
 function viewResolution(id) {
-  const r = resolutions.find(x=>x.id===id); if(!r) return;
-  const m = meetings.find(x=>x.id===r.meetingId);
-  document.getElementById('modalTitle').textContent = r.code + ' - ' + r.title;
+  const r = resolutions.find(x => x.id === id); if (!r) return;
+  const m = meetings.find(x => x.id === r.meetingId);
+  document.getElementById('modalTitle').textContent = r.code + ' — ' + r.title;
   document.getElementById('modalBody').innerHTML = `
     <div class="detail-row"><span class="dlbl">کد مصوبه:</span><span class="dval">${r.code}</span></div>
-    <div class="detail-row"><span class="dlbl">جلسه:</span><span class="dval">${m?m.title+' ('+m.date+')':'-'}</span></div>
+    <div class="detail-row"><span class="dlbl">جلسه:</span><span class="dval">${m ? m.title+' ('+m.date+')' : '-'}</span></div>
     <div class="detail-row"><span class="dlbl">عنوان:</span><span class="dval">${r.title}</span></div>
     <div class="detail-row"><span class="dlbl">شرح مفاد:</span><span class="dval">${r.desc||'-'}</span></div>
     <div class="detail-row"><span class="dlbl">متولی اصلی:</span><span class="dval">${r.owner}</span></div>
     <div class="detail-row"><span class="dlbl">متولی همکار:</span><span class="dval">${r.coOwner||'-'}</span></div>
     <div class="detail-row"><span class="dlbl">مهلت پاسخگویی:</span><span class="dval">${r.deadline}</span></div>
-    <div class="detail-row"><span class="dlbl">وضعیت:</span><span class="dval">${statusLabel(r.status,r.deadline)}</span></div>`;
+    <div class="detail-row"><span class="dlbl">وضعیت:</span><span class="dval">${statusLabel(r.status, r.deadline)}</span></div>`;
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function changeStatus(id) {
-  if (!currentUser||!currentUser.admin) { alert('دسترسی ندارید'); return; }
-  const r = resolutions.find(x=>x.id===id); if(!r) return;
+async function changeStatus(id) {
+  if (!currentUser || !currentUser.admin) { alert('دسترسی ندارید'); return; }
+  const r = resolutions.find(x => x.id === id); if (!r) return;
   const opts = ['pending','progress','done'];
-  r.status = opts[(opts.indexOf(r.status)+1)%3];
-  localStorage.setItem('sp_resolutions',JSON.stringify(resolutions));
-  renderResolutions(); renderDashboard();
+  r.status = opts[(opts.indexOf(r.status) + 1) % 3];
+  await saveToCloud();
+  renderResolutions();
+  renderDashboard();
 }
 
-function deleteResolution(id) {
-  if (!currentUser||!currentUser.admin) return;
+async function deleteResolution(id) {
+  if (!currentUser || !currentUser.admin) return;
   if (!confirm('آیا مطمئن هستید؟')) return;
-  resolutions = resolutions.filter(x=>x.id!==id);
-  localStorage.setItem('sp_resolutions',JSON.stringify(resolutions));
-  renderResolutions(); renderDashboard();
+  resolutions = resolutions.filter(x => x.id !== id);
+  await saveToCloud();
+  renderResolutions();
+  renderDashboard();
 }
 
-/* ---- DASHBOARD ---- */
+// ============================================================
+// DASHBOARD
+// ============================================================
 function renderDashboard() {
-  const overdueL = resolutions.filter(r=>isOverdue(r.deadline,r.status));
-  const progress = resolutions.filter(r=>r.status==='progress');
-  const done     = resolutions.filter(r=>r.status==='done');
+  const overdueL = resolutions.filter(r => isOverdue(r.deadline, r.status));
+  const progress = resolutions.filter(r => r.status === 'progress' && !isOverdue(r.deadline, r.status));
+  const done     = resolutions.filter(r => r.status === 'done');
   document.getElementById('statTotal').textContent    = resolutions.length;
   document.getElementById('statOverdue').textContent  = overdueL.length;
   document.getElementById('statProgress').textContent = progress.length;
@@ -676,11 +726,11 @@ function renderDashboard() {
   const toBody = document.getElementById('tbodyOverdue');
   toBody.innerHTML = '';
   if (!overdueL.length) {
-    toBody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#aaa">موردی وجود ندارد</td></tr>';
+    toBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:16px">موردی وجود ندارد</td></tr>';
   } else {
     overdueL.forEach(r => {
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${r.code}</td><td>${r.title}</td><td>${r.owner}</td><td>${r.deadline}</td><td>${statusLabel(r.status,r.deadline)}</td>`;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.code}</td><td>${r.title}</td><td>${r.owner}</td><td>${r.deadline}</td><td>${statusLabel(r.status,r.deadline)}</td>`;
       toBody.appendChild(tr);
     });
   }
@@ -688,202 +738,126 @@ function renderDashboard() {
   const tpBody = document.getElementById('tbodyInProgress');
   tpBody.innerHTML = '';
   if (!progress.length) {
-    tpBody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#aaa">موردی وجود ندارد</td></tr>';
+    tpBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:16px">موردی وجود ندارد</td></tr>';
   } else {
     progress.forEach(r => {
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
         <td>${r.code}</td><td>${r.title}</td><td>${r.coOwner||'-'}</td><td>${r.deadline}</td>
         <td>${currentUser&&currentUser.admin
-          ?`<button class="btn-sm btn-edit" onclick="changeStatus('${r.id}')">تغییر وضعیت</button>`
-          :statusLabel(r.status,r.deadline)}</td>`;
+          ? `<button class="btn-sm btn-edit" onclick="changeStatus('${r.id}')">تغییر وضعیت</button>`
+          : statusLabel(r.status, r.deadline)}</td>`;
       tpBody.appendChild(tr);
     });
   }
 }
 
-/* ---- MODAL ---- */
+// ============================================================
+// REPORT
+// ============================================================
+function renderReport() {
+  if (!currentUser || !currentUser.admin) return;
+  const ownerSel = document.getElementById('rptOwner');
+  ownerSel.innerHTML = '<option value="">همه متولیان</option>';
+  const owners = [...new Set(resolutions.map(r => r.owner).filter(Boolean))];
+  owners.forEach(o => { const op=document.createElement('option'); op.value=o; op.textContent=o; ownerSel.appendChild(op); });
+  fillMeetingSelect();
+  applyReportFilter();
+}
+
+function applyReportFilter() {
+  if (!currentUser || !currentUser.admin) return;
+  const st  = document.getElementById('rptStatus').value;
+  const own = document.getElementById('rptOwner').value;
+  const mtg = document.getElementById('rptMeeting').value;
+  const q   = (document.getElementById('rptSearch').value || '').toLowerCase();
+  reportFiltered = resolutions.filter(r => {
+    if (own && r.owner !== own) return false;
+    if (mtg && r.meetingId !== mtg) return false;
+    if (q && !r.title.toLowerCase().includes(q) && !r.code.toLowerCase().includes(q)) return false;
+    if (st === 'overdue') return isOverdue(r.deadline, r.status);
+    if (st && r.status !== st) return false;
+    return true;
+  });
+  renderReportBars();
+  renderReportTable();
+}
+
+function renderReportBars() {
+  const total    = reportFiltered.length || 1;
+  const done     = reportFiltered.filter(r => r.status === 'done').length;
+  const progress = reportFiltered.filter(r => r.status === 'progress' && !isOverdue(r.deadline, r.status)).length;
+  const pending  = reportFiltered.filter(r => r.status === 'pending' && !isOverdue(r.deadline, r.status)).length;
+  const overdue  = reportFiltered.filter(r => isOverdue(r.deadline, r.status)).length;
+  const bars = [
+    { label:'انجام شده',     val:done,     color:'#28a745', bg:'#d1e7dd' },
+    { label:'در دست بررسی', val:progress, color:'#0d6efd', bg:'#cfe2ff' },
+    { label:'در انتظار',     val:pending,  color:'#ffc107', bg:'#fff3cd' },
+    { label:'تاریخ گذشته',  val:overdue,  color:'#dc3545', bg:'#f8d7da' },
+  ];
+  document.getElementById('reportBars').innerHTML = bars.map(b => `
+    <div class="bar-item">
+      <div class="bar-label">${b.label} — <strong>${b.val}</strong> مورد</div>
+      <div class="bar-track" style="background:${b.bg}">
+        <div class="bar-fill" style="width:${Math.round(b.val/total*100)}%;background:${b.color}"></div>
+      </div>
+      <div class="bar-val">${Math.round(b.val/total*100)}٪ از ${reportFiltered.length} مورد فیلترشده</div>
+    </div>`).join('');
+}
+
+function renderReportTable() {
+  const tbody = document.getElementById('tbodyReport');
+  tbody.innerHTML = '';
+  if (!reportFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">موردی یافت نشد</td></tr>'; return;
+  }
+  reportFiltered.forEach(r => {
+    const m = meetings.find(x => x.id === r.meetingId);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.code}</td><td>${r.title}</td>
+      <td>${m ? m.title : '-'}</td>
+      <td>${r.owner}</td><td>${r.coOwner||'-'}</td>
+      <td>${r.deadline}</td>
+      <td>${statusLabel(r.status, r.deadline)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ============================================================
+// EXCEL EXPORT
+// ============================================================
+function exportExcel() {
+  if (!currentUser || !currentUser.admin) { alert('دسترسی ندارید'); return; }
+  if (!reportFiltered.length) { alert('داده‌ای برای خروجی وجود ندارد'); return; }
+  const headers = ['کد مصوبه','عنوان مصوبه','جلسه مرتبط','متولی اصلی','متولی همکار','مهلت پاسخگویی','وضعیت'];
+  const rows = reportFiltered.map(r => {
+    const m = meetings.find(x => x.id === r.meetingId);
+    return [r.code, r.title, m ? m.title+' ('+m.date+')' : '-', r.owner, r.coOwner||'-', r.deadline, statusText(r.status, r.deadline)];
+  });
+  const BOM = '\uFEFF';
+  const csv = BOM + [headers, ...rows]
+    .map(row => row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
+    .join('\r\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const now  = new Date();
+  a.href = url;
+  a.download = `مصوبات_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// MODAL
+// ============================================================
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
 }
-document.getElementById('modalOverlay').addEventListener('click', function(e){
-  if(e.target===this) closeModal();
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
 });
 </script>
-<!-- در انتهای فایل index.html، بخش script را با این کد جایگزین کنید -->
-<script>
-    // تنظیمات JSONBin
-    const BIN_ID = '6a21878ef5f4af5e29b86632';
-    const MASTER_KEY = '$2a$10$6a21878ef5f4af5e29b86632'; // نکته: کلید معمولا با $2a$ شروع می‌شود، اگر دقیقا همان مقدار ارسالی شماست، آن را اصلاح کنید.
-    const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-
-    const USERS = [
-        { id: 'admin', name: 'مدیر سیستم', role: 'admin', pass: '123' },
-        { id: 'user1', name: 'کاربر ۱', role: 'user', pass: '1' },
-        { id: 'user2', name: 'کاربر ۲', role: 'user', pass: '2' }
-    ];
-
-    let currentUser = null;
-    let meetings = [];
-    let resolutions = [];
-
-    // --- توابع ارتباط با سرور ---
-    async function saveDataToCloud() {
-        showLoading(true);
-        try {
-            const response = await fetch(API_URL, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': MASTER_KEY
-                },
-                body: JSON.stringify({ meetings, resolutions })
-            });
-            if (!response.ok) throw new Error('خطا در ذخیره سازی ابری');
-        } catch (error) {
-            alert('خطا در اتصال به سرور: ' + error.message);
-        } finally {
-            showLoading(false);
-        }
-    }
-
-    async function loadDataFromCloud() {
-        showLoading(true);
-        try {
-            const response = await fetch(`${API_URL}/latest`, {
-                headers: { 'X-Master-Key': MASTER_KEY }
-            });
-            if (!response.ok) throw new Error('خطا در دریافت داده‌ها');
-            const data = await response.json();
-            meetings = data.record.meetings || [];
-            resolutions = data.record.resolutions || [];
-            refreshUI();
-        } catch (error) {
-            console.error('Data load error:', error);
-        } finally {
-            showLoading(false);
-        }
-    }
-
-    function showLoading(show) {
-        // می‌توانید یک المان Loading به HTML اضافه کنید
-        console.log(show ? "در حال هماهنگی با سرور..." : "به‌روزرسانی کامل شد.");
-    }
-
-    // --- توابع اصلی سامانه ---
-    function doLogin() {
-        const u = document.getElementById('username').value;
-        const p = document.getElementById('password').value;
-        const user = USERS.find(x => x.id === u && x.pass === p);
-
-        if (user) {
-            currentUser = user;
-            document.getElementById('login-page').classList.remove('active');
-            document.getElementById('main-app').classList.add('active');
-            document.getElementById('display-user-name').innerText = user.name;
-            
-            if (user.role === 'admin') {
-                document.body.classList.add('is-admin');
-            } else {
-                document.body.classList.remove('is-admin');
-            }
-            
-            initApp();
-        } else {
-            alert('نام کاربری یا رمز عبور اشتباه است');
-        }
-    }
-
-    async function initApp() {
-        fillUserSelects();
-        fillMeetingSelect();
-        generateCode();
-        await loadDataFromCloud(); // خواندن داده‌ها از ابر در هنگام شروع
-    }
-
-    function refreshUI() {
-        renderDashboard();
-        renderMeetings();
-        renderResolutions();
-        fillMeetingSelect();
-    }
-
-    // ذخیره مصوبه جدید
-    async function saveResolution() {
-        if (currentUser.role !== 'admin') return;
-        
-        const res = {
-            id: Date.now(),
-            code: document.getElementById('res-code').value,
-            title: document.getElementById('res-title').value,
-            meetingId: document.getElementById('res-meeting').value,
-            owner: document.getElementById('res-owner').value,
-            deadline: document.getElementById('res-deadline').value,
-            status: 'pending'
-        };
-
-        if(!res.title || !res.owner || !res.deadline) {
-            alert('لطفا فیلدهای ضروری را پر کنید');
-            return;
-        }
-
-        resolutions.push(res);
-        await saveDataToCloud(); // ذخیره در ابر
-        
-        document.getElementById('res-title').value = '';
-        generateCode();
-        showSection('resolutions');
-        refreshUI();
-    }
-
-    // تغییر وضعیت مصوبه
-    async function changeStatus(id) {
-        const idx = resolutions.findIndex(r => r.id === id);
-        if (idx === -1) return;
-
-        const s = resolutions[idx].status;
-        if (s === 'pending') resolutions[idx].status = 'progress';
-        else if (s === 'progress') resolutions[idx].status = 'done';
-        else resolutions[idx].status = 'pending';
-
-        await saveDataToCloud();
-        refreshUI();
-    }
-
-    // حذف مصوبه
-    async function deleteResolution(id) {
-        if (currentUser.role !== 'admin') return;
-        if (!confirm('آیا از حذف این مصوبه مطمئن هستید؟')) return;
-
-        resolutions = resolutions.filter(r => r.id !== id);
-        await saveDataToCloud();
-        refreshUI();
-    }
-
-    // ذخیره صورتجلسه جدید
-    async function saveMeeting() {
-        if (currentUser.role !== 'admin') return;
-
-        const m = {
-            id: 'm-' + Date.now(),
-            title: document.getElementById('m-title').value,
-            date: document.getElementById('m-date').value,
-            location: document.getElementById('m-location').value
-        };
-
-        if(!m.title || !m.date) {
-            alert('عنوان و تاریخ الزامی است');
-            return;
-        }
-
-        meetings.push(m);
-        await saveDataToCloud();
-        
-        document.getElementById('m-title').value = '';
-        showSection('meetings');
-        refreshUI();
-    }
-
-    // سایر توابع نمایش (render) مشابه کد قبلی شماست و فقط refreshUI را صدا می‌زنند
-    // ... (توابع renderDashboard, renderMeetings, renderResolutions را از فایل خودتان اینجا قرار دهید)
-</script>
+</body>
+</html>
